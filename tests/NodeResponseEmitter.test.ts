@@ -2,7 +2,7 @@ import Call from '@chubbyjs/chubbyjs-mock/dist/Call';
 import MockByCalls, { mockByCallsUsed } from '@chubbyjs/chubbyjs-mock/dist/MockByCalls';
 import ResponseInterface from '@chubbyjs/psr-http-message/dist/ResponseInterface';
 import { describe, expect, test } from '@jest/globals';
-import { ServerResponse } from 'http';
+import { OutgoingHttpHeaders, ServerResponse } from 'http';
 import { PassThrough } from 'stream';
 import NodeResponseEmitter from '../src/NodeResponseEmitter';
 import ResponseDouble from './Double/ResponseDouble';
@@ -24,18 +24,16 @@ describe('NodeResponseEmitter', () => {
             let data = {
                 statusCode: 0,
                 statusMessage: '',
-                headers: new Map(),
+                headers: {},
                 emitted: false,
             };
 
             // @ts-ignore
             const res = {
-                writeHead: (statusCode: number, statusMessage: string) => {
+                writeHead: (statusCode: number, statusMessage: string, headers: OutgoingHttpHeaders) => {
                     data.statusCode = statusCode;
                     data.statusMessage = statusMessage;
-                },
-                setHeader: (name: string, value: string | Array<string>) => {
-                    data.headers.set(name, value);
+                    data.headers = headers;
                 },
                 on: () => null,
                 once: () => null,
@@ -51,7 +49,9 @@ describe('NodeResponseEmitter', () => {
             expect(data).toEqual({
                 statusCode: 404,
                 statusMessage: 'Not Found',
-                headers: new Map([['Content-Type', ['application/json']]]),
+                headers: {
+                    'Content-Type': ['application/json'],
+                },
                 emitted: true,
             });
 
