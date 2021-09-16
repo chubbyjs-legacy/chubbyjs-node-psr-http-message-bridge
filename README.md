@@ -34,19 +34,22 @@ A node req/res psr-htt-message bridge.
 Through [NPM](https://www.npmjs.com) as [@chubbyjs/chubbyjs-node-psr-http-message-bridge][1].
 
 ```sh
-npm i @chubbyjs/chubbyjs-node-psr-http-message-bridge@1.2.2 \
+npm i @chubbyjs/chubbyjs-node-psr-http-message-bridge@1.2.3 \
     @chubbyjs/chubbyjs-http-message@1.1.0 // or any other psr-http-factory implementation
 ```
 
 ## Usage
 
 ```ts
-import ServerRequestFactory from '@chubbjs/chubbyjs-http-message/dist/Factory/ServerRequestFactory';
-import StreamFactory from '@chubbjs/chubbyjs-http-message/dist/Factory/StreamFactory';
-import UriFactory from '@chubbjs/chubbyjs-http-message/dist/Factory/UriFactory';
-import PsrRequestFactory from '@chubbyjs/chubbyjs-node-psr-http-message-bridge/dist/PsrRequestFactory';
 import NodeResponseEmitter from '@chubbyjs/chubbyjs-node-psr-http-message-bridge/dist/NodeResponseEmitter';
+import PsrRequestFactory from '@chubbyjs/chubbyjs-node-psr-http-message-bridge/dist/PsrRequestFactory';
+import ResponseFactory from '@chubbyjs/chubbyjs-http-message/dist/Factory/ResponseFactory';
+import ServerRequestFactory from '@chubbyjs/chubbyjs-http-message/dist/Factory/ServerRequestFactory';
+import StreamFactory from '@chubbyjs/chubbyjs-http-message/dist/Factory/StreamFactory';
+import UriFactory from '@chubbyjs/chubbyjs-http-message/dist/Factory/UriFactory';
 import { createServer, IncomingMessage, ServerResponse } from 'http';
+
+const responseFactory = new ResponseFactory();
 
 const psrRequestFactory = new PsrRequestFactory(
     new ServerRequestFactory(),
