@@ -3,6 +3,7 @@
 [![CI](https://github.com/chubbyjs/chubbyjs-node-psr-http-message-bridge/workflows/CI/badge.svg?branch=master)](https://github.com/chubbyjs/chubbyjs-node-psr-http-message-bridge/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/chubbyjs/chubbyjs-node-psr-http-message-bridge/badge.svg?branch=master)](https://coveralls.io/github/chubbyjs/chubbyjs-node-psr-http-message-bridge?branch=master)
 [![Infection MSI](https://badge.stryker-mutator.io/github.com/chubbyjs/chubbyjs-node-psr-http-message-bridge/master)](https://dashboard.stryker-mutator.io/reports/github.com/chubbyjs/chubbyjs-node-psr-http-message-bridge/master)
+[![npm-version](https://img.shields.io/npm/v/@chubbyjs/chubbyjs-node-psr-http-message-bridge.svg)](https://www.npmjs.com/package/@chubbyjs/chubbyjs-node-psr-http-message-bridge)
 
 [![bugs](https://sonarcloud.io/api/project_badges/measure?project=chubbyjs_chubbyjs-node-psr-http-message-bridge&metric=bugs)](https://sonarcloud.io/dashboard?id=chubbyjs_chubbyjs-node-psr-http-message-bridge)
 [![code_smells](https://sonarcloud.io/api/project_badges/measure?project=chubbyjs_chubbyjs-node-psr-http-message-bridge&metric=code_smells)](https://sonarcloud.io/dashboard?id=chubbyjs_chubbyjs-node-psr-http-message-bridge)
@@ -33,19 +34,19 @@ A node req/res psr-htt-message bridge.
 Through [NPM](https://www.npmjs.com) as [@chubbyjs/chubbyjs-node-psr-http-message-bridge][1].
 
 ```sh
-npm i @chubbyjs/chubbyjs-node-psr-http-message-bridge@1.2.1 \
+npm i @chubbyjs/chubbyjs-node-psr-http-message-bridge@1.2.2 \
     @chubbyjs/chubbyjs-http-message@1.1.0 // or any other psr-http-factory implementation
 ```
 
 ## Usage
-
-### PsrRequestFactory
 
 ```ts
 import ServerRequestFactory from '@chubbjs/chubbyjs-http-message/dist/Factory/ServerRequestFactory';
 import StreamFactory from '@chubbjs/chubbyjs-http-message/dist/Factory/StreamFactory';
 import UriFactory from '@chubbjs/chubbyjs-http-message/dist/Factory/UriFactory';
 import PsrRequestFactory from '@chubbyjs/chubbyjs-node-psr-http-message-bridge/dist/PsrRequestFactory';
+import NodeResponseEmitter from '@chubbyjs/chubbyjs-node-psr-http-message-bridge/dist/NodeResponseEmitter';
+import { createServer, IncomingMessage, ServerResponse } from 'http';
 
 const psrRequestFactory = new PsrRequestFactory(
     new ServerRequestFactory(),
@@ -53,17 +54,18 @@ const psrRequestFactory = new PsrRequestFactory(
     new StreamFactory()
 );
 
-const serverRequest = psrRequestFactory.create(req);
-```
-
-### NodeResponseEmitter
-
-```ts
-import NodeResponseEmitter from '@chubbyjs/chubbyjs-node-psr-http-message-bridge/dist/NodeResponseEmitter';
-
 const nodeResponseEmitter = new NodeResponseEmitter();
 
-nodeResponseEmitter.emit(response, res);
+const server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    const serverRequest = psrRequestFactory.create(req);
+    const response = responseFactory.createResponse(200);
+
+    serverRequest.getBody().pipe(response.getBody());
+
+    nodeResponseEmitter.emit(response, res);
+});
+
+server.listen(8080, '0.0.0.0');
 ```
 
 ## Copyright
