@@ -7,11 +7,14 @@ import { parse as cookieParser } from 'cookie';
 import { IncomingMessage } from 'http';
 import { parse as queryParser } from 'qs';
 
+type UriOptions = { schema: 'http' | 'https'; host?: string } | boolean;
+
 class PsrRequestFactory {
     public constructor(
         private serverRequestFactory: ServerRequestFactoryInterface,
         private uriFactory: UriFactoryInterface,
         private streamFactory: StreamFactoryInterface,
+        private uriOptions: UriOptions = false,
     ) {}
 
     public create(req: IncomingMessage): ServerRequestInterface {
@@ -19,11 +22,7 @@ class PsrRequestFactory {
             throw new Error('Method missing');
         }
 
-        if (!req.url) {
-            throw new Error('Url missing');
-        }
-
-        const uri = this.uriFactory.createUri('http://' + (req.headers.host ?? 'localhost') + req.url);
+        const uri = this.uriFactory.createUri(this.getUri(req));
 
         let serverRequest = this.serverRequestFactory
             .createServerRequest(req.method.toUpperCase() as Method, uri)
@@ -41,12 +40,48 @@ class PsrRequestFactory {
         }
 
         Object.entries(req.headers)
-            .filter(([name, value]) => value)
+            .filter((entry) => entry[1])
             .forEach(([name, value]) => {
                 serverRequest = serverRequest.withHeader(name, value as string[] | string);
             });
 
         return serverRequest;
+    }
+
+    private getUri(req: IncomingMessage): string {
+        if (!req.url) {
+            throw new Error('Url missing');
+        }
+
+        if (true === this.uriOptions) {
+            const missingHeaders = ['x-forwarded-proto', 'x-forwarded-host', 'x-forwarded-port'].filter(
+                (header) => !req.headers[header],
+            );
+
+            if (missingHeaders.length > 0) {
+                throw new Error(`Missing "${missingHeaders.join('", "')}" header(s).`);
+            }
+
+            return (
+                req.headers['x-forwarded-proto'] +
+                '://' +
+                req.headers['x-forwarded-host'] +
+                ':' +
+                req.headers['x-forwarded-port'] +
+                req.url
+            );
+        }
+
+        const schema = typeof this.uriOptions === 'object' ? this.uriOptions.schema : 'http';
+
+        const host =
+            typeof this.uriOptions === 'object' && this.uriOptions.host
+                ? this.uriOptions.host
+                : req.headers.host
+                ? req.headers.host
+                : 'localhost';
+
+        return schema + '://' + host + req.url;
     }
 }
 

@@ -34,8 +34,8 @@ A node req/res psr-htt-message bridge.
 Through [NPM](https://www.npmjs.com) as [@chubbyjs/chubbyjs-node-psr-http-message-bridge][1].
 
 ```sh
-npm i @chubbyjs/chubbyjs-node-psr-http-message-bridge@1.2.3 \
-    @chubbyjs/chubbyjs-http-message@1.1.0 // or any other psr-http-factory implementation
+npm i @chubbyjs/chubbyjs-node-psr-http-message-bridge@1.3.0 \
+    @chubbyjs/chubbyjs-http-message@1.1.1
 ```
 
 ## Usage
